@@ -3,10 +3,12 @@
 import React, { createContext, useEffect, useState, useContext } from 'react'
 import { GetUserWishlist, AddToWishlist, RemoveFromWishlist } from '@/app/_actions/wishlistActions'
 import { toast } from 'sonner'
+import { useSession } from 'next-auth/react'
 
 export const wishlistContext = createContext<any>(null)
 
 export default function WishlistContextProvider({ children }: { children: React.ReactNode }) {
+    const { status } = useSession()
     const [wishlistItems, setWishlistItems] = useState<any[]>([])
     const [wishlistIds, setWishlistIds] = useState<string[]>([])
     const [isLoading, setIsLoading] = useState(false)
@@ -30,7 +32,7 @@ export default function WishlistContextProvider({ children }: { children: React.
                 setWishlistIds(prev => prev.filter(id => id !== productId))
                 setWishlistItems(prev => prev.filter(item => (item.id || item._id) !== productId))
             } else {
-                toast.error("Failed to remove", { position: "top-center" })
+                toast.error(res.message || "Failed to remove", { position: "top-center" })
             }
         } else {
             // Add
@@ -41,14 +43,19 @@ export default function WishlistContextProvider({ children }: { children: React.
                 // Re-fetch items to get full product data
                 fetchWishlist()
             } else {
-                toast.error("Failed to add", { position: "top-center" })
+                toast.error(res.message || "Failed to add", { position: "top-center" })
             }
         }
     }
 
     useEffect(() => {
-        fetchWishlist()
-    }, [])
+        if (status === 'authenticated') {
+            fetchWishlist()
+        } else if (status === 'unauthenticated') {
+            setWishlistItems([])
+            setWishlistIds([])
+        }
+    }, [status])
 
     return (
         <wishlistContext.Provider value={{

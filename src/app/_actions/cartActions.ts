@@ -9,6 +9,10 @@ import axios from "axios"
 export async function RemoveFromCart(productId: string) {
     const token = await getUserToken()
 
+    if (!token) {
+        return { status: "error", message: "User not authenticated" }
+    }
+
     try {
         const { data } = await axios.delete(`https://ecommerce.routemisr.com/api/v1/cart/${productId}`, {
             headers: {
@@ -17,6 +21,7 @@ export async function RemoveFromCart(productId: string) {
         })
         return data
     } catch (error: any) {
+        console.error("Error in RemoveFromCart:", error.response?.data || error.message)
         return error.response?.data || { status: "error", message: "Failed to remove item" }
     }
 }
@@ -27,6 +32,10 @@ export async function RemoveFromCart(productId: string) {
 export async function ClearCart() {
     const token = await getUserToken()
 
+    if (!token) {
+        return { status: "error", message: "User not authenticated" }
+    }
+
     try {
         const { data } = await axios.delete(`https://ecommerce.routemisr.com/api/v1/cart`, {
             headers: {
@@ -35,6 +44,7 @@ export async function ClearCart() {
         })
         return data
     } catch (error: any) {
+        console.error("Error in ClearCart:", error.response?.data || error.message)
         return error.response?.data || { status: "error", message: "Failed to clear cart" }
     }
 }

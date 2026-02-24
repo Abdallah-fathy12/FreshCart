@@ -32,13 +32,13 @@ export default function SignupPage() {
     setLoading(true)
     try {
       const res = await signupAction(values)
-      if (res) {
+      if (res.success) {
         toast.success("Identity profile forged successfully.", {
           style: { background: '#0f172a', border: '1px solid #7c3aed', color: '#ddd6fe' }
         })
         router.push("/login")
       } else {
-        toast.error("Protocol rejection. Identity already exists or data is corrupt.", {
+        toast.error(res.message || "Protocol rejection. Identity already exists or data is corrupt.", {
           style: { background: '#0f172a', border: '1px solid #e11d48', color: '#fda4af' }
         })
       }

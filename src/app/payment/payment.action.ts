@@ -13,12 +13,22 @@ type shippingAddressType = {
 }
 
 async function getBackendToken() {
-    const session: any = await getServerSession(nextAuthConfig)
-    return session?.userTokenFromBackend
+    try {
+        const session: any = await getServerSession(nextAuthConfig)
+        return session?.userTokenFromBackend
+    } catch (error) {
+        console.error("Error getting backend token:", error)
+        return null
+    }
 }
 
 export async function CashOrder(cartId: string, userData: shippingAddressType) {
     const token = await getBackendToken();
+
+    if (!token) {
+        return { status: "error", message: "User not authenticated", position: "top-center" }
+    }
+
     try {
         const { data } = await axios.post(
             `https://ecommerce.routemisr.com/api/v1/orders/${cartId}`,
@@ -31,12 +41,18 @@ export async function CashOrder(cartId: string, userData: shippingAddressType) {
         );
         return data;
     } catch (error: any) {
-        return error.response?.data || { message: "Error in Cash Order" , position : "top-center" };
+        console.error("Error in CashOrder (payment):", error.response?.data || error.message)
+        return error.response?.data || { message: "Error in Cash Order", position: "top-center" };
     }
 }
 
 export async function OnlineOrder(cartId: string, userData: shippingAddressType) {
     const token = await getBackendToken();
+
+    if (!token) {
+        return { status: "error", message: "User not authenticated", position: "top-center" }
+    }
+
     const origin = process.env.NEXTAUTH_URL || "http://localhost:3000";
 
     try {
@@ -51,6 +67,7 @@ export async function OnlineOrder(cartId: string, userData: shippingAddressType)
         );
         return data;
     } catch (error: any) {
-        return error.response?.data || { message: "Error in Online Order" , position : "top-center"};
+        console.error("Error in OnlineOrder (payment):", error.response?.data || error.message)
+        return error.response?.data || { message: "Error in Online Order", position: "top-center" };
     }
 }
