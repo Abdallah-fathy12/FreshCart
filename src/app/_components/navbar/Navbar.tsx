@@ -27,7 +27,7 @@ import {
 import { useTheme } from 'next-themes'
 
 export default function Navbar() {
-    const session = useSession()
+    const { data: session, status } = useSession()
     const pathname = usePathname()
     const router = useRouter()
     const { numOfCartItems } = useContext(cartContext)
@@ -49,8 +49,8 @@ export default function Navbar() {
 
         // Function to sync image from storage
         const syncProfileImage = () => {
-            if (session.data?.user?.email) {
-                const savedImage = localStorage.getItem(`elite_image_${session.data.user.email}`)
+            if (session?.user?.email) {
+                const savedImage = localStorage.getItem(`elite_image_${session.user.email}`)
                 setProfileImage(savedImage)
             }
         }
@@ -78,7 +78,7 @@ export default function Navbar() {
             window.removeEventListener('storage', syncProfileImage)
             window.removeEventListener('profile_image_updated', syncProfileImage)
         }
-    }, [lastScrollY, session.data?.user?.email])
+    }, [lastScrollY, session?.user?.email])
 
     if (!mounted) return null
 
@@ -90,7 +90,7 @@ export default function Navbar() {
         { name: 'Home', href: '/', icon: <LayoutGrid className="w-4 h-4" /> },
         { name: 'Products', href: '/product', icon: <Package className="w-4 h-4" /> },
         { name: 'Categories', href: '/categories', icon: <LayoutGrid className="w-4 h-4" /> },
-        ...(session.data ? [
+        ...(status === 'authenticated' ? [
             { name: 'Brands', href: '/brands', icon: <Package className="w-4 h-4" /> },
             { name: 'Orders', href: '/allorders', icon: <Package className="w-4 h-4" /> },
         ] : []),
@@ -160,7 +160,7 @@ export default function Navbar() {
                             />
                         </div>
 
-                        {session.data && (
+                        {status === 'authenticated' && (
                             <div className="flex items-center gap-2 sm:gap-4">
                                 <Link href="/wishlist" className={`group flex items-center justify-center w-10 h-10 sm:w-12 h-12 rounded-[14px] sm:rounded-2xl transition-all border
                                     ${pathname === '/wishlist'
@@ -195,22 +195,22 @@ export default function Navbar() {
                                 {theme === 'dark' ? <Sun className="w-4 h-4 sm:w-5 h-5" /> : <Moon className="w-4 h-4 sm:w-5 h-5" />}
                             </button>
 
-                            {session.data ? (
+                            {status === 'authenticated' ? (
                                 <div className="flex items-center gap-1 sm:gap-2 bg-slate-100/40 dark:bg-white/5 p-1 sm:p-1.5 rounded-[24px] sm:rounded-[32px] border border-slate-200/50 dark:border-white/5 shadow-xl backdrop-blur-md">
                                     <Link
                                         href="/myprofile"
                                         className="group flex items-center gap-2 sm:gap-4 hover:bg-white/5 p-1 sm:pr-6 rounded-[20px] sm:rounded-[28px] transition-all"
                                     >
                                         <div className="w-8 h-8 sm:w-12 h-12 bg-violet-600 rounded-full flex items-center justify-center text-white group-hover:rotate-6 transition-all shadow-xl shadow-violet-500/20 overflow-hidden relative border-2 border-white dark:border-slate-800">
-                                            {profileImage || session.data.user?.image ? (
-                                                <Image src={profileImage || (session.data.user?.image as string)} alt="Profile" fill className="object-cover" />
+                                            {profileImage || session?.user?.image ? (
+                                                <Image src={profileImage || (session?.user?.image as string)} alt="Profile" fill className="object-cover" />
                                             ) : (
                                                 <User className="w-4 h-4 sm:w-6 h-6" />
                                             )}
                                         </div>
                                         <div className="flex flex-col items-start hidden md:flex">
                                             <span className="text-[6px] sm:text-[7px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 leading-none mb-1">Security ID</span>
-                                            <span className="text-[12px] sm:text-[14px] font-black text-slate-900 dark:text-white uppercase tracking-tighter italic leading-none">{session.data.user?.name?.split(' ')[0]}</span>
+                                            <span className="text-[12px] sm:text-[14px] font-black text-slate-900 dark:text-white uppercase tracking-tighter italic leading-none">{session?.user?.name?.split(' ')[0]}</span>
                                         </div>
                                     </Link>
                                     <div className="w-px h-6 sm:h-8 bg-slate-200 dark:bg-white/10 mx-1 hidden sm:block"></div>
@@ -268,7 +268,7 @@ export default function Navbar() {
                             </ul>
                         </div>
 
-                        {session.data && (
+                        {status === 'authenticated' && (
                             <div className="mt-auto space-y-6">
                                 <Link href="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-6 rounded-[28px] bg-violet-600 text-white font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-violet-500/20">
                                     <div className="flex items-center gap-6">

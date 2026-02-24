@@ -63,7 +63,7 @@ export default function RootLayout({
                   backdropFilter: 'blur(20px)',
                   color: '#fff',
                   fontFamily: 'inherit',
-                  fontWeight: '900',
+                  fontWeight: '900', 
                   textTransform: 'uppercase',
                   letterSpacing: '0.15em',
                   fontSize: '10px',

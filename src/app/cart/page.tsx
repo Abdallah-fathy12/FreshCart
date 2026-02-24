@@ -48,24 +48,32 @@ export default function CartPage() {
     });
   }
 
-  async function handleUpdateQuantity(id: string, newCount: number) {
+  async function handleUpdateQuantity(id: string, newCount: number, currentCount: number) {
     if (newCount < 1) return;
 
     setUpdatingItems(prev => [...prev, id]);
-    try {
-      const res = await UpdateCart(id, newCount);
-      if (res.status === "success") {
-        data.setProducts(res.data.products);
-        data.setNumOfCartItems(res.numOfCartItems);
-        data.setTotalCartPrice(res.data.totalCartPrice);
-      } else {
-        toast.error("Failed to update quantity");
-      }
-    } catch (error) {
-      toast.error("Network error. Try again.");
-    } finally {
-      setUpdatingItems(prev => prev.filter(itemId => itemId !== id));
-    }
+
+    const isIncreasing = newCount > currentCount;
+
+    toast.promise(UpdateCart(id, newCount), {
+      loading: isIncreasing ? "Increasing quantity..." : "Decreasing quantity...",
+      success: (res) => {
+        if (res.status === "success") {
+          data.setProducts(res.data.products);
+          data.setNumOfCartItems(res.numOfCartItems);
+          data.setTotalCartPrice(res.data.totalCartPrice);
+          setUpdatingItems(prev => prev.filter(itemId => itemId !== id));
+          return `Quantity updated to ${newCount}`;
+        }
+        setUpdatingItems(prev => prev.filter(itemId => itemId !== id));
+        throw new Error(res.message || "Failed to update quantity");
+      },
+      error: (err) => {
+        setUpdatingItems(prev => prev.filter(itemId => itemId !== id));
+        return err.message || "Network error. Try again.";
+      },
+      position: "top-center"
+    });
   }
 
   // Full Page Loading State
@@ -215,14 +223,14 @@ export default function CartPage() {
                     {/* Boutique Style Quantity Selection */}
                     <div className="flex items-center gap-1.5 p-1.5 bg-slate-50 dark:bg-slate-800 rounded-[28px] border border-slate-100 dark:border-slate-700 shadow-inner">
                       <button
-                        onClick={() => handleUpdateQuantity(item.product._id, item.count - 1)}
+                        onClick={() => handleUpdateQuantity(item.product._id, item.count - 1, item.count)}
                         className="w-12 h-12 flex items-center justify-center rounded-[22px] bg-white dark:bg-slate-700 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:shadow-xl transition-all active:scale-90 border border-slate-50 dark:border-slate-600 group/btn"
                       >
                         <Minus className="w-5 h-5 transition-transform group-hover/btn:scale-110" />
                       </button>
                       <span className="w-14 text-center text-3xl font-black text-slate-800 dark:text-white font-mono tracking-tighter">{item.count}</span>
                       <button
-                        onClick={() => handleUpdateQuantity(item.product._id, item.count + 1)}
+                        onClick={() => handleUpdateQuantity(item.product._id, item.count + 1, item.count)}
                         className="w-12 h-12 flex items-center justify-center rounded-[22px] bg-white dark:bg-slate-700 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:shadow-xl transition-all active:scale-90 border border-slate-50 dark:border-slate-600 group/btn"
                       >
                         <Plus className="w-5 h-5 transition-transform group-hover/btn:scale-110" />
@@ -294,10 +302,10 @@ export default function CartPage() {
                 <div className="space-y-6">
                   <Link
                     href="/checkout"
-                    className="w-full h-24 flex items-center justify-center gap-6 rounded-[32px] bg-emerald-500 text-slate-950 font-black text-xl uppercase tracking-[0.2em] italic hover:bg-emerald-400 transition-all shadow-[0_20px_50px_rgba(16,185,129,0.3)] group active:scale-[0.97]"
+                    className="w-full h-24 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 rounded-[32px] bg-emerald-500 text-slate-950 font-black text-xl uppercase tracking-[0.2em] italic hover:bg-emerald-400 transition-all shadow-[0_20px_50px_rgba(16,185,129,0.3)] group active:scale-[0.97] text-center"
                   >
-                    Proceed To Checkout
-                    <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-4" />
+                    <span className="block sm:inline">Proceed To Checkout</span>
+                    <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-4 shrink-0" />
                   </Link>
 
                   <div className="grid grid-cols-2 gap-5">
