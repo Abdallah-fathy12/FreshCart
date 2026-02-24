@@ -44,22 +44,17 @@ export const nextAuthConfig: NextAuthOptions = {
 
     callbacks: {
         // jwt => بتشتغل مرتين مره مع ال login ومره مع ال navgation
-        jwt(params) {
-
-            if (params.user) {
-                params.token.userTokenFromBackend = params.user.userTokenFromBackend
+        jwt({ token, user }: any) {
+            if (user) {
+                token.userTokenFromBackend = user.userTokenFromBackend
             }
-
-
-
-            return params.token
-
+            return token
         },
-        session(params: any) {
-            if (params.token) {
-                params.session.userTokenFromBackend = params.token.userTokenFromBackend
+        session({ session, token }: any) {
+            if (token) {
+                session.userTokenFromBackend = token.userTokenFromBackend
             }
-            return params.session
+            return session
         }
     },
 
